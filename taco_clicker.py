@@ -104,13 +104,6 @@ taco.setposition(-190, -150)
 
 font_setup = ("Arial", "15", "normal")
 
-# TPS writer
-tps = trtl.Turtle()
-tps.hideturtle()
-tps.penup()
-tps.speed(0)
-tps.setposition(-510, 138)
-tps.write("Current tacos per second: 0")
 tacos_per_second = 0
 
 #update the amount of tacos
