@@ -3,6 +3,7 @@
 #################
 import random as rand
 import turtle as trtl
+import winsound
 from threading import Event
 wn = trtl.Screen()
 wn.setup(580,449)
@@ -74,7 +75,7 @@ global burritovalue
 burritovalue = False
 
 # Score rate
-score_rate = 10000000
+score_rate = 1
 upgrade_cost = (score_rate*3)**2
 
 rate = trtl.Turtle()
@@ -104,7 +105,18 @@ taco.setposition(-190, -150)
 
 font_setup = ("Arial", "15", "normal")
 
+# TPS writer
+tps = trtl.Turtle()
+tps.hideturtle()
+tps.penup()
+tps.speed(0)
+tps.pencolor("white")
+tps.setposition(-580, 210)
+tps.write("Current tacos per second: 0")
 tacos_per_second = 0
+def tps_update():
+  tps.clear()
+  tps.write("Current tacos per second: "+str(tacos_per_second))
 
 #update the amount of tacos
 def update_score(amount):
@@ -270,7 +282,6 @@ def update_score(amount):
     score_writer.write(str(score) + " tacos", font = font_setup)
 
 
-
 ###################
 ### Menu Screen ###
 ###################
@@ -280,6 +291,7 @@ tutorialmode = False
 global tutorialnumber
 tutorialnumber = 0
 textwriter = trtl.Turtle()
+textwriter.showturtle()
 textwriter.speed(0)
 textwriter.pu()
 textwriter.shape("menutaco.gif")
@@ -287,7 +299,6 @@ textwriter.setposition(0,100)
 
 wn.bgpic("menu.gif")
 game_start = False
-settings = trtl.Turtle()
 start_button = trtl.Turtle()
 start_button.speed(0)
 start_button.penup()
@@ -295,6 +306,7 @@ start_button.shape("menuplay.gif")
 
 
 help = trtl.Turtle()
+help.showturtle()
 help.pu()
 help.speed(0)
 help.shape("menuhelp.gif")
@@ -308,6 +320,7 @@ arrow.shape("arrow.gif")
 
 def start_game(x, y):
   global game_start
+
   help.hideturtle()
   textwriter.hideturtle()
   wn.setup(1200,700)
@@ -326,10 +339,15 @@ def start_game(x, y):
   ketchup.showturtle()
   mayonnaise.showturtle()
   soy_sauce.showturtle()
+  winsound.PlaySound("gamemusic.wav", winsound.SND_ASYNC)
+  wn.ontimer(countdown, rand.randint(30000,120000))
+
+
   
 
 
 def tutorial(x,y):
+  winsound.PlaySound("btsmusic.wav", winsound.SND_ASYNC)
   global tutorialmode
   tutorialmode = True
   help.hideturtle()
@@ -428,6 +446,7 @@ def buy_tabasco(x, y):
     tabasco_cost = 2 * (round(1.15**tabasco_amount)+tabasco_amount)
     update_tabasco()
     tacos_per_second += 0.2
+    tps_update()
     if tabasco_bought == False:
       tabasco_bought = True
       ttimer_on = True
@@ -466,7 +485,8 @@ def buy_bbq_sauce(x, y):
     update_score(0)
     bbq_sauce_cost = 1000 + 100*(round(1.15**bbq_sauce_amount)+bbq_sauce_amount)
     update_bbq_sauce()
-    tacos_per_second += 0.2
+    tacos_per_second += 10
+    tps_update()
     if bbq_sauce_bought == False:
       bbq_sauce_bought = True
       btimer_on = True
@@ -503,7 +523,8 @@ def buy_ketchup(x, y):
     update_score(0)
     ketchup_cost = 11000 + 1000*(round(1.15**ketchup_amount)+ketchup_amount)
     update_ketchup()
-    tacos_per_second += 0.2
+    tacos_per_second += 150
+    tps_update()
     if ketchup_bought == False:
       ketchup_bought = True
       ktimer_on = True
@@ -541,7 +562,8 @@ def buy_mayonnaise(x, y):
     update_score(0)
     mayonnaise_cost = 120000 + 10000*(round(1.15**mayonnaise_amount)+mayonnaise_amount)
     update_mayonnaise()
-    tacos_per_second += 0.2
+    tacos_per_second += 2000
+    tps_update()
     if mayonnaise_bought == False:
       mayonnaise_bought = True
       mtimer_on = True
@@ -579,7 +601,8 @@ def buy_soy_sauce(x, y):
     update_score(0)
     soy_sauce_cost = 1300000 + 100000*(round(1.15**soy_sauce_amount)+soy_sauce_amount)
     update_soy_sauce()
-    tacos_per_second += 0.2
+    tacos_per_second += 1300000
+    tps_update()
     if soy_sauce_bought == False:
       soy_sauce_bought = True
       stimer_on = True
@@ -706,7 +729,6 @@ def countdown():
 def hideturtle():
   burrito.hideturtle()
   wn.ontimer(countdown, rand.randint(30000,120000))
-wn.ontimer(countdown, rand.randint(30000,120000))
 
 #When the taco is clicked increase the score
 def taco_click(x, y):
