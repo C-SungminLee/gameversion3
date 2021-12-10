@@ -129,7 +129,7 @@ def update_score(amount):
     arrow.write("This is your score, you use",font = ("Arial", "8", "italic"))
     arrow.setposition(-590, -255)
     arrow.write("your score to buy upgrades",font = ("Arial", "8", "italic"))
-    tutorialnumber = 4
+    tutorialnumber = 1
   elif tutorialmode == True and tutorialnumber == 1:
     arrow.clear()
     arrow.setposition(-540, -210)
@@ -195,7 +195,7 @@ def update_score(amount):
     arrow.write("added for the multiplier",font = ("Arial", "8", "italic"))
     tutorialnumber = 6
 
-  elif tutorialmode == True and tutorialnumber == 5:
+  elif tutorialmode == True and tutorialnumber == 6:
     arrow.clear()
     arrow.setposition(180, 130)
     arrow.showturtle()
@@ -207,8 +207,8 @@ def update_score(amount):
     arrow.write("bbq sauce has a 30 multiplier, ",font = ("Arial", "8", "italic"))
     arrow.setposition(100,110)
     arrow.write("ketchup has a 150 multiplier",font = ("Arial", "8", "italic"))
-    tutorialnumber = 6
-  elif tutorialmode == True and tutorialnumber == 6:
+    tutorialnumber = 7
+  elif tutorialmode == True and tutorialnumber == 7:
     arrow.clear()
     arrow.setposition(180, 130)
     arrow.showturtle()
@@ -218,9 +218,9 @@ def update_score(amount):
     arrow.write("mayonnaise has a 2000 multiplier, ",font = ("Arial", "7", "italic"))
     arrow.setposition(100,115)
     arrow.write("and soy sauce has a 10000 multiplier. ",font = ("Arial", "7", "italic"))
-    tutorialnumber = 7
+    tutorialnumber = 8
 
-  elif tutorialmode == True and tutorialnumber == 7:
+  elif tutorialmode == True and tutorialnumber == 8:
     arrow.clear()
     arrow.setposition(180, 130)
     arrow.showturtle()
@@ -233,9 +233,9 @@ def update_score(amount):
     arrow.setposition(100,110)
     arrow.write("the autoclicker adds to the score.",font = ("Arial", "7", "italic"))
     
-    tutorialnumber = 8
+    tutorialnumber = 9
 
-  elif tutorialmode == True and tutorialnumber == 8:
+  elif tutorialmode == True and tutorialnumber == 9:
     arrow.clear()
     arrow.setposition(180, 130)
     arrow.showturtle()
@@ -243,9 +243,9 @@ def update_score(amount):
     arrow.hideturtle()
     arrow.setposition(100,120)
     arrow.write("Thats the Game! ",font = ("Arial", "15", "italic"))    
-    tutorialnumber = 9
+    tutorialnumber = 10
 
-  elif tutorialmode == True and tutorialnumber == 9:
+  elif tutorialmode == True and tutorialnumber == 10:
     arrow.clear()
     tutorialmode = False
     tutorialnumber = 0
@@ -275,6 +275,7 @@ def update_score(amount):
     score_writer.clear()
     score += amount
     score_writer.write(str(score) + " tacos", font = font_setup)
+
 
 
 ###################
