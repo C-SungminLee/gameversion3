@@ -4,7 +4,6 @@
 import random as rand
 import turtle as trtl
 import winsound
-from threading import Event
 wn = trtl.Screen()
 wn.setup(580,449)
 
@@ -13,16 +12,16 @@ wn.addshape("menu.gif")
 wn.addshape("menuhelp.gif")
 wn.addshape("menuplay.gif")
 wn.addshape("menutaco.gif")
+wn.addshape("tutorial_end.gif")
 wn.addshape("arrow.gif")
 wn.addshape("arrowleft.gif")
-
 # Game Sprites
 wn.addshape("taco.gif")
 wn.addshape("burrito.gif")
 wn.addshape("buttonunpressed.gif")
 wn.addshape("buttonpressed.gif")
-wn.addshape("fork.gif")
 wn.addshape("background.gif")
+wn.addshape("backbutton.gif")
 # Autoclicker Sprites
 wn.addshape("tabasco.gif")
 wn.addshape("bbq_sauce.gif")
@@ -46,14 +45,15 @@ wn.register_shape('rectangle',rectCors)
 score = 0
 
 # math problems and answers for burrito lootbox
-math_problems = ["1 + 1 = ?","84 / 4 = ?","5 * 25 = ?","3^4 = ?","9 ^ 1/2 = ?","6 * 2 = ?", "50 / 10 = ?","Solve for x. 9((3x+6)/3) = 0"]
-math_anwers = ["2", "21", "125","81","3", "12", "5", "-2"]
+math_problems = ["84 / 4 = ?","5 * 25 = ?","3^4 = ?","9 ^ 1/2 = ?","6 * 2 = ?", "50 / 10 = ?","Solve for x. 9((3x+6)/3) = 0", "60 / 5 = ?"
+, "Solve for x. x^3 = 8", "3 * 17 = ?", "(1/3) ^ -2", "Solve for x. x/5 = 3.2", "5123 ^ 0", "64 ^ 1/3", "6! / 5!", "(32 - 8*4)/752", "12 * 7"]
+math_anwers = ["21", "125","81","3", "12", "5", "-2", "12", "2", "51", "9", "16", "1", "4", "6", "0", "84"]
 
 # Score Writer
 score_writer = trtl.Turtle()
+score_writer.hideturtle()
 score_writer.speed(0)
 score_writer.penup()
-score_writer.hideturtle()
 score_writer.setposition(-450, -250)
 score_writer.pendown()
 # Font
@@ -61,6 +61,8 @@ font_setup = ("Arial", "15", "normal")
 
 # Taco per click upgrade Button
 button = trtl.Turtle()
+button.hideturtle()
+button.shape("buttonunpressed.gif")
 button.speed(0)
 button.penup()
 button.setposition(-510, 118)
@@ -75,22 +77,23 @@ global burritovalue
 burritovalue = False
 
 # Score rate
-score_rate = 1
+score_rate = 100000
 upgrade_cost = (score_rate*3)**2
 
 rate = trtl.Turtle()
+rate.hideturtle()
 rate.speed(0)
 rate.penup()
-rate.hideturtle()
 rate.setposition(-450, -230)
 rate.pendown()
 
 # Score rate upgrade text
 next = trtl.Turtle()
+next.hideturtle()
 next.color("moccasin")
 next.speed(0)
 next.penup()
-next.hideturtle()
+
 next.setposition(-550, 180)
 next.pendown()
 
@@ -105,7 +108,7 @@ taco.setposition(-190, -150)
 
 font_setup = ("Arial", "15", "normal")
 
-# TPS writer
+# tacos per second writer
 tps = trtl.Turtle()
 tps.hideturtle()
 tps.penup()
@@ -113,57 +116,80 @@ tps.speed(0)
 tps.pencolor("white")
 tps.setposition(-580, 210)
 tps.write("Current tacos per second: 0")
-tacos_per_second = 0
+tacos_per_second = 0.0
 def tps_update():
   tps.clear()
-  tps.write("Current tacos per second: "+str(tacos_per_second))
+  tps.write("Current tacos per second: "+str(round(tacos_per_second, 2)))
 
-#update the amount of tacos
+# back button
+back_button = trtl.Turtle()
+back_button.hideturtle()
+back_button.penup()
+back_button.speed(0)
+back_button.shape("backbutton.gif")
+back_button.setposition(120, -250)
+
+replay = False
+def back(x, y):
+  global replay, game_start, menu
+  menu = True
+  game_start = False
+  replay = True
+  wn.setup(580,449)
+  wn.bgpic("menu.gif")
+  taco.hideturtle()
+  back_button.hideturtle()
+  start_button.showturtle()
+  help.showturtle()
+  menutaco.showturtle()
+  for sauce in sauce_list:
+    sauce.hideturtle()
+  wn.ontimer(menutaco_up, 1000)
+  winsound.PlaySound("menu_theme", winsound.SND_LOOP + winsound.SND_ASYNC)
+
+#update the amount of tacos & tutorial mode
 def update_score(amount):
+
+  # arrow system (tutorial mode only)
   global tutorialmode, tutorialnumber
   if tutorialmode == True and tutorialnumber == 0:
     arrow.clear()
     score_writer.clear()
-    score_writer.write("1 tacos", font = font_setup)
+    score_writer.write("1 taco", font = font_setup)
     arrow.setposition(-540, -235)
     arrow.shape("arrow.gif")
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
+    arrow_stamp()
     arrow.setposition(-590, -240)
     arrow.write("This is your score, you use",font = ("Arial", "8", "italic"))
     arrow.setposition(-590, -255)
     arrow.write("your score to buy upgrades",font = ("Arial", "8", "italic"))
     tutorialnumber = 1
+
   elif tutorialmode == True and tutorialnumber == 1:
     arrow.clear()
     arrow.setposition(-540, -210)
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
+    arrow_stamp()
     arrow.setposition(-590, -215)
     arrow.write("This is your cps, the amount",font = ("Arial", "8", "italic"))
     arrow.setposition(-590, -225)
     arrow.write("of tacos you get per click",font = ("Arial", "8", "italic"))
     tutorialnumber = 2
+
   elif tutorialmode == True and tutorialnumber == 2:
     arrow.clear()
     arrow.setposition(-350, 110)
     arrow.shape("arrowleft.gif")
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
+    arrow_stamp()
     arrow.setposition(-400,115)
     arrow.write("This is the upgrade button, ",font = ("Arial", "8", "italic"))
     arrow.setposition(-400,105)
     arrow.write("you press it to upgade your cps",font = ("Arial", "8", "italic"))
     tutorialnumber = 3
+
   elif tutorialmode == True and tutorialnumber == 3:
     arrow.clear()
     arrow.setposition(-375, 180)
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
+    arrow_stamp()
     arrow.setposition(-425,190)
     arrow.write("This is the cost, when you",font = ("Arial", "8", "italic"))
     arrow.setposition(-425,180)
@@ -171,13 +197,12 @@ def update_score(amount):
     arrow.setposition(-425,170)
     arrow.write("subtracted from your score",font = ("Arial", "8", "italic"))
     tutorialnumber = 4
+
   elif tutorialmode == True and tutorialnumber == 4:
     arrow.clear()
     arrow.setposition(180, 130)
     arrow.shape("arrow.gif")
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
+    arrow_stamp()
     arrow.setposition(100,130)
     arrow.write("These are the autoclickers, ",font = ("Arial", "8", "italic"))
     arrow.setposition(100,120)
@@ -185,13 +210,11 @@ def update_score(amount):
     arrow.setposition(100,110)
     arrow.write("per timer",font = ("Arial", "8", "italic"))
     tutorialnumber = 5
+
   elif tutorialmode == True and tutorialnumber == 5:
     arrow.clear()
     arrow.setposition(180, 130)
-    
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
+    arrow_stamp()
     arrow.setposition(100,130)
     arrow.write("The # next to the oz is ",font = ("Arial", "8", "italic"))
     arrow.setposition(100,120)
@@ -203,9 +226,7 @@ def update_score(amount):
   elif tutorialmode == True and tutorialnumber == 6:
     arrow.clear()
     arrow.setposition(180, 130)
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
+    arrow_stamp()
     arrow.setposition(100,130)
     arrow.write("Tobasco has a 1 multiplier, ",font = ("Arial", "8", "italic"))
     arrow.setposition(100,120)
@@ -213,12 +234,11 @@ def update_score(amount):
     arrow.setposition(100,110)
     arrow.write("ketchup has a 150 multiplier",font = ("Arial", "8", "italic"))
     tutorialnumber = 7
+
   elif tutorialmode == True and tutorialnumber == 7:
     arrow.clear()
     arrow.setposition(180, 130)
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
+    arrow_stamp()
     arrow.setposition(100,125)
     arrow.write("mayonnaise has a 2000 multiplier, ",font = ("Arial", "7", "italic"))
     arrow.setposition(100,115)
@@ -228,41 +248,86 @@ def update_score(amount):
   elif tutorialmode == True and tutorialnumber == 8:
     arrow.clear()
     arrow.setposition(180, 130)
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
+    arrow_stamp()
     arrow.setposition(100,130)
     arrow.write("Next to the autoclikcers there ",font = ("Arial", "8", "italic"))
     arrow.setposition(100,120)
     arrow.write("are timers, when the timers fill ",font = ("Arial", "8", "italic"))
     arrow.setposition(100,110)
     arrow.write("the autoclicker adds to the score.",font = ("Arial", "7", "italic"))
-    
     tutorialnumber = 9
 
   elif tutorialmode == True and tutorialnumber == 9:
     arrow.clear()
-    arrow.setposition(180, 130)
-    arrow.showturtle()
-    arrow.stamp()
-    arrow.hideturtle()
-    arrow.setposition(100,120)
-    arrow.write("Thats the Game! ",font = ("Arial", "15", "italic"))    
+    burrito.setposition(100, 110)
+    burrito.showturtle()
+    arrow.setposition(-140, 110)
+    arrow_stamp()
+    arrow.setposition(-220, 110)
+    arrow.write("These are burrito loot boxes!",font = ("Arial", "8", "italic"))
+    arrow.setposition(-220, 100)
+    arrow.write("They will appear on your screen",font = ("Arial", "8", "italic"))
+    arrow.setposition(-220,90)
+    arrow.write("once every while.",font = ("Arial", "7", "italic"))
     tutorialnumber = 10
 
   elif tutorialmode == True and tutorialnumber == 10:
     arrow.clear()
+    arrow.setposition(-140, 110)
+    arrow_stamp()
+    arrow.setposition(-220, 110)
+    arrow.write("Upon it's click, you will be",font = ("Arial", "8", "italic"))
+    arrow.setposition(-220, 100)
+    arrow.write("prompted with a payment",font = ("Arial", "8", "italic"))
+    arrow.setposition(-220,90)
+    arrow.write("(of your IQ)",font = ("Arial", "7", "italic"))
+    tutorialnumber = 11
+
+  elif tutorialmode == True and tutorialnumber == 11:
+    arrow.clear()
+    arrow.setposition(-140, 110)
+    arrow_stamp()
+    arrow.setposition(-220, 110)
+    arrow.write("You'll be rewarded with",font = ("Arial", "8", "italic"))
+    arrow.setposition(-220, 100)
+    arrow.write("many tacos once you go",font = ("Arial", "8", "italic"))
+    arrow.setposition(-220,90)
+    arrow.write("through with the payment.",font = ("Arial", "7", "italic"))
+    tutorialnumber = 10
+    tutorialnumber = 12
+
+  elif tutorialmode == True and tutorialnumber == 12:
+    arrow.clear()
+    arrow.setposition(-140, 110)
+    arrow_stamp()
+    burrito.hideturtle()
+    arrow.setposition(-220, 110)
+    arrow.write("However, you have to click the",font = ("Arial", "8", "italic"))
+    arrow.setposition(-220, 100)
+    arrow.write("burrito within 10 seconds.",font = ("Arial", "8", "italic"))
+    arrow.setposition(-220,90)
+    arrow.write("Otherwise, it'll dissapear.",font = ("Arial", "7", "italic"))
+    tutorialnumber = 13
+
+  elif tutorialmode == True and tutorialnumber == 13:
+    arrow.clear()
+    arrow.setposition(-100, 100)
+    arrow.shape("tutorial_end.gif")
+    arrow.showturtle()
+    tutorialnumber = 14
+
+  elif tutorialmode == True and tutorialnumber == 14:
+    arrow.clear()
+    arrow.hideturtle()
     tutorialmode = False
     tutorialnumber = 0
-    
     help.showturtle()
     start_button.showturtle()
-    textwriter.showturtle()
-
+    menutaco.showturtle()
 
     wn.setup(580,449)
     wn.bgpic("menu.gif")
-    
+
     taco.hideturtle()
     score_writer.clear()
     next.clear()
@@ -272,121 +337,14 @@ def update_score(amount):
     ketchup.hideturtle()
     mayonnaise.hideturtle()
     soy_sauce.hideturtle()
+    winsound.PlaySound("menu_theme", winsound.SND_LOOP + winsound.SND_ASYNC)
 
-
-
+  # updating the score (outside of tutorial mode)
   else:
     global score
     score_writer.clear()
     score += amount
     score_writer.write(str(score) + " tacos", font = font_setup)
-
-
-###################
-### Menu Screen ###
-###################
-
-global tutorialmode
-tutorialmode = False
-global tutorialnumber
-tutorialnumber = 0
-textwriter = trtl.Turtle()
-textwriter.showturtle()
-textwriter.speed(0)
-textwriter.pu()
-textwriter.shape("menutaco.gif")
-textwriter.setposition(0,100)
-
-wn.bgpic("menu.gif")
-game_start = False
-start_button = trtl.Turtle()
-start_button.speed(0)
-start_button.penup()
-start_button.shape("menuplay.gif")
-
-
-help = trtl.Turtle()
-help.showturtle()
-help.pu()
-help.speed(0)
-help.shape("menuhelp.gif")
-help.setposition(0, -100)
-
-arrow = trtl.Turtle()
-arrow.speed(0)
-arrow.hideturtle()
-arrow.pu()
-arrow.shape("arrow.gif")
-
-def start_game(x, y):
-  global game_start
-
-  help.hideturtle()
-  textwriter.hideturtle()
-  wn.setup(1200,700)
-  wn.bgpic("background.gif")
-  game_start = True
-  start_button.hideturtle()
-  taco.showturtle()
-  score_writer.write(str(score) + " tacos", font = font_setup)
-  
-  taco.shape("taco.gif")
-  button.shape("buttonunpressed.gif")
-  next.write("Next upgrade: " + str(upgrade_cost) + " tacos",font = ("Arial", "7", "italic"))
-  rate.write("tacos per click: " + str(score_rate))
-  tabasco.showturtle()
-  bbq_sauce.showturtle()
-  ketchup.showturtle()
-  mayonnaise.showturtle()
-  soy_sauce.showturtle()
-  winsound.PlaySound("gamemusic.wav", winsound.SND_ASYNC)
-  wn.ontimer(countdown, rand.randint(30000,120000))
-
-
-  
-
-
-def tutorial(x,y):
-  winsound.PlaySound("btsmusic.wav", winsound.SND_ASYNC)
-  global tutorialmode
-  tutorialmode = True
-  help.hideturtle()
-  textwriter.hideturtle()
-  wn.setup(1200,700)
-  wn.bgpic("background.gif")
-  start_button.hideturtle()
-  taco.showturtle()
-  score_writer.write(str(score) + " tacos", font = font_setup)
-  
-  taco.shape("taco.gif")
-  button.shape("buttonunpressed.gif")
-  next.write("Next upgrade: 1",font = ("Arial", "7", "italic"))
-  rate.write("tacos per click: 1")
-  tabasco.showturtle()
-  bbq_sauce.showturtle()
-  ketchup.showturtle()
-  mayonnaise.showturtle()
-  soy_sauce.showturtle()
-  
-  arrow.setposition(0, -150)
-  arrow.shape("arrowleft.gif")
-  arrow.showturtle()
-  arrow.stamp()
-  arrow.hideturtle()
-  arrow.setposition(-50, -140)
-  arrow.color("white")
-  arrow.write("Press the Taco to",font = ("Arial", "10", "italic"))
-  arrow.setposition(-50, -160)
-  arrow.write("increase your score",font = ("Arial", "10", "italic"))
-  
-
-
-
-
-
-start_button.onclick(start_game)
-help.onclick(tutorial)
-
 
 ####################
 ### Autoclickers ###
@@ -406,15 +364,26 @@ soy_sauce.hideturtle()
 
 # sauce text writers
 tabasco_writer = trtl.Turtle()
+tabasco_writer.hideturtle()
 bbq_sauce_writer = trtl.Turtle()
+bbq_sauce_writer.hideturtle()
 ketchup_writer = trtl.Turtle()
+ketchup_writer.hideturtle()
 mayonnaise_writer = trtl.Turtle()
+mayonnaise_writer.hideturtle()
 soy_sauce_writer = trtl.Turtle()
+soy_sauce_writer.hideturtle()
 
-sauce_list = [tabasco, tabasco_writer, bbq_sauce, bbq_sauce_writer, ketchup, ketchup_writer, mayonnaise, mayonnaise_writer, soy_sauce, soy_sauce_writer]
+sauce_list = [tabasco, bbq_sauce, ketchup, mayonnaise, soy_sauce]
+sauce_writer_list = [tabasco_writer, bbq_sauce_writer, ketchup_writer, mayonnaise_writer, soy_sauce_writer]
+writer_coords = [(310, 120), (310, 30), (310, -60), (310, -150), (310, -240)]
+menu_items = ["Tabasco", "BBQ Sauce", "Ketchup", "Mayonnaise", "Soy Sauce"]
 for sauce in sauce_list:
   sauce.penup()
   sauce.speed(0)
+for writer in sauce_writer_list:
+  writer.penup()
+  writer.speed(0)
 
 # Menu writer
 sauce_font = ("Times New Roman", "17", "italic")
@@ -424,6 +393,7 @@ menu_writer.speed(0)
 menu_writer.hideturtle()
 menu_item_list = ["-  TABASCO  -", "-  BBQ SAUCE  -", "-  KETCHUP  -", "-  MAYONNAISE  -", "-  SOY SAUCE  -"]
 menu_item_coords = [(310, 145), (310, 55), (310, -35), (310, -125), (310, -215)]
+menu_costs = ["2", "1000", "11000", "120000", "1300000"]
 for i in range(5):
   menu_writer.setposition(menu_item_coords[i])
   menu_writer.write(menu_item_list[i], font = sauce_font)
@@ -437,15 +407,17 @@ tabasco_amount = 0
 tabasco_cost = 2
 tabasco_bought = False
 
+# buy function
 def buy_tabasco(x, y):
   global tabasco_amount, score, tabasco_cost, tacos_per_second, tabasco_bought, ttimer_on
-  if score >= tabasco_cost:
+  if score >= tabasco_cost and tutorialmode == False:
     tabasco_amount += 1
     score -= tabasco_cost
     update_score(0)
     tabasco_cost = 2 * (round(1.15**tabasco_amount)+tabasco_amount)
     update_tabasco()
-    tacos_per_second += 0.2
+    if tabasco_amount % 5 == 0: tacos_per_second += 0.15
+    else: tacos_per_second += 0.17
     tps_update()
     if tabasco_bought == False:
       tabasco_bought = True
@@ -453,7 +425,6 @@ def buy_tabasco(x, y):
       timer()
 
 # tabasco writer
-tabasco_writer.hideturtle()
 tabasco_writer.setposition(310, 120)
 tabasco_writer.write("0 oz. of Tabasco", font = font_setup)
 tabasco_writer.setposition(310, 100)
@@ -477,9 +448,10 @@ bbq_sauce_amount = 0
 bbq_sauce_cost = 1000
 bbq_sauce_bought = False
 
+# buy function
 def buy_bbq_sauce(x, y):
   global bbq_sauce_amount, score, bbq_sauce_cost, tacos_per_second, bbq_sauce_bought, btimer_on
-  if score >= bbq_sauce_cost:
+  if score >= bbq_sauce_cost and tutorialmode == False:
     bbq_sauce_amount += 1
     score -= bbq_sauce_cost
     update_score(0)
@@ -492,7 +464,6 @@ def buy_bbq_sauce(x, y):
       btimer_on = True
 
 # bbq_sauce writer
-bbq_sauce_writer.hideturtle()
 bbq_sauce_writer.setposition(310, 30)
 bbq_sauce_writer.write("0 oz. of BBQ Sauce", font = font_setup)
 bbq_sauce_writer.setposition(310, 10)
@@ -515,9 +486,10 @@ ketchup_amount = 0
 ketchup_cost = 11000
 ketchup_bought = False
 
+# buy function
 def buy_ketchup(x, y):
   global ketchup_amount, score, ketchup_cost, tacos_per_second, ketchup_bought, ktimer_on
-  if score >= ketchup_cost:
+  if score >= ketchup_cost and tutorialmode == False:
     ketchup_amount += 1
     score -= ketchup_cost
     update_score(0)
@@ -530,7 +502,6 @@ def buy_ketchup(x, y):
       ktimer_on = True
 
 # ketchup writer
-ketchup_writer.hideturtle()
 ketchup_writer.setposition(310, -60)
 ketchup_writer.write("0 oz. of Ketchup", font = font_setup)
 ketchup_writer.setposition(310, -80)
@@ -554,9 +525,10 @@ mayonnaise_amount = 0
 mayonnaise_cost = 120000
 mayonnaise_bought = False
 
+# buy function
 def buy_mayonnaise(x, y):
   global mayonnaise_amount, score, mayonnaise_cost, tacos_per_second, mayonnaise_bought, mtimer_on
-  if score >= mayonnaise_cost:
+  if score >= mayonnaise_cost and tutorialmode == False:
     mayonnaise_amount += 1
     score -= mayonnaise_cost
     update_score(0)
@@ -569,7 +541,6 @@ def buy_mayonnaise(x, y):
       mtimer_on = True
 
 # mayonnaise writer
-mayonnaise_writer.hideturtle()
 mayonnaise_writer.setposition(310, -150)
 mayonnaise_writer.write("0 oz. of mayonnaise", font = font_setup)
 mayonnaise_writer.setposition(310, -170)
@@ -593,9 +564,10 @@ soy_sauce_amount = 0
 soy_sauce_cost = 1300000
 soy_sauce_bought = False
 
+# buy function
 def buy_soy_sauce(x, y):
   global soy_sauce_amount, score, soy_sauce_cost, tacos_per_second, soy_sauce_bought, stimer_on
-  if score >= soy_sauce_cost:
+  if score >= soy_sauce_cost and tutorialmode == False:
     soy_sauce_amount += 1
     score -= soy_sauce_cost
     update_score(0)
@@ -608,7 +580,6 @@ def buy_soy_sauce(x, y):
       stimer_on = True
 
 # soy_sauce writer
-soy_sauce_writer.hideturtle()
 soy_sauce_writer.setposition(310, -240)
 soy_sauce_writer.write("0 oz. of Soy Sauce", font = font_setup)
 soy_sauce_writer.setposition(310, -260)
@@ -628,16 +599,22 @@ def update_soy_sauce():
 #############
 # Timers for tabasco, bbq, ketchup, mayo, and soy sauce
 ttimer = trtl.Turtle()
+ttimer.hideturtle()
 btimer = trtl.Turtle()
+btimer.hideturtle()
 ktimer = trtl.Turtle()
+ktimer.hideturtle()
 mtimer = trtl.Turtle()
+mtimer.hideturtle()
 stimer = trtl.Turtle()
+stimer.hideturtle()
 timer_list = [ttimer, btimer, ktimer, mtimer, stimer]
 for timer in timer_list:
   timer.speed(0)
   timer.penup()
   timer.shape("timer0.gif")
   timer.setposition(550, 130 - 90*timer_list.index(timer))
+  timer.showturtle()
 
 # variables to check if a certain sauce is activated
 ttimer_on = False
@@ -675,42 +652,43 @@ def timer_check():
 level = 1
 def timer():
   global level
-  if level == 1:
-    timer_check()
-    level = level + 1
-    wn.ontimer(timer, 1000)
+  if game_start == True:
+    if level == 1:
+      timer_check()
+      level = level + 1
+      wn.ontimer(timer, 1000)
 
-  elif level == 2:
-    timer_check()
-    level = level + 1
-    wn.ontimer(timer, 1000)
+    elif level == 2:
+      timer_check()
+      level = level + 1
+      wn.ontimer(timer, 1000)
 
-  elif level == 3:
-    timer_check()
-    level = level + 1
-    wn.ontimer(timer, 1000)
+    elif level == 3:
+      timer_check()
+      level = level + 1
+      wn.ontimer(timer, 1000)
 
-  elif level == 4:
-    timer_check()
-    level = level + 1
-    wn.ontimer(timer, 1000)
+    elif level == 4:
+      timer_check()
+      level = level + 1
+      wn.ontimer(timer, 1000)
 
-  elif level == 5:
-    timer_check()
-    level = level + 1
-    wn.ontimer(timer, 1000)
+    elif level == 5:
+      timer_check()
+      level = level + 1
+      wn.ontimer(timer, 1000)
 
-  elif level == 6:
-    timer_check()
-    level = 1
-    wn.ontimer(timer, 1000)
+    elif level == 6:
+      timer_check()
+      level = 1
+      wn.ontimer(timer, 1000)
 
 ########################
 ### Burrito Loot Box ###
 ########################
-global checkvalue
 checkvalue = False
 
+# check so burrito doesnt go away while in use
 def check():
   global burritovalue
   if burritovalue != True:
@@ -721,11 +699,14 @@ def check():
     checkvalue = True
     burrito.showturtle()
 
+# random burrito countdown
 def countdown():
-  burrito.setposition(rand.randint(-300, 90), rand.randint(50, 120))
-  burrito.showturtle()
-  wn.ontimer(check, rand.randint(30000,120000))
+  if game_start == True:
+    burrito.setposition(rand.randint(-300, 90), rand.randint(50, 120))
+    burrito.showturtle()
+  wn.ontimer(check, 10000)
 
+# burrito hideturtle function
 def hideturtle():
   burrito.hideturtle()
   wn.ontimer(countdown, rand.randint(30000,120000))
@@ -736,26 +717,28 @@ def taco_click(x, y):
 
 #When the burrito is clicked ask a random math question
 def burrito_click(x, y):
-  global burritovalue
-  burritovalue = True
-  lootbox()
+    global burritovalue
+    burritovalue = True
+    lootbox()
 
 #Asking the random math question
 def lootbox():
   number = rand.randint(0,len(math_problems)-1)  
-  answer = wn.textinput("Problem","What is " + str(math_problems[number]))
-  while answer != math_anwers[number]:
+  answer = wn.textinput("Problem",str(math_problems[number]))
+  while answer != math_anwers[number] and answer != None:
     answer = wn.textinput("Problem","Try again what is " + (math_problems[number]))
   else:
-    if score_rate <= 7:
+    if answer == None and tutorialmode != True:
+      burrito.hideturtle()
+    elif score_rate <= 7:
       update_score(rand.randint(50,150))
     elif score_rate >= 8 and score_rate <= 14:
-      update_score(rand.randint(200,350))
+      update_score(rand.randint(2000,3500))
     elif score_rate >= 15 and score_rate <= 20:
-      update_score(rand.randint(1000,2000))
+      update_score(rand.randint(10000,20000))
     elif score_rate >= 21 and score_rate <= 30:
-      update_score(rand.randint(3000,4500))
-    burrito.hideturtle()
+      update_score(rand.randint(300000,450000))
+    if tutorialmode != True: burrito.hideturtle()
     if checkvalue != False:
       wn.ontimer(countdown, rand.randint(30000,120000))
     
@@ -786,6 +769,185 @@ def upgrade():
     next.write("Next upgrade: " + str(upgrade_cost) + " tacos",font = ("Arial", "7", "italic"))
     button.shape("buttonunpressed.gif")
 
+###################
+### Menu Screen ###
+###################
+global menu
+menu = True
+wn.bgpic("menu.gif")
+winsound.PlaySound("menu_theme", winsound.SND_LOOP + winsound.SND_ASYNC)
+tutorialmode = False
+tutorialnumber = 0
+game_start = False
+
+# menu title
+menutaco = trtl.Turtle()
+menutaco.hideturtle()
+menutaco.speed(0)
+menutaco.pu()
+menutaco.shape("menutaco.gif")
+menutaco.setposition(0,100)
+menutaco.showturtle()
+
+# menu title bobbing
+menu_ycor = 100.0
+def menutaco_up():
+  global menu_ycor
+  while game_start == False:
+    while menu_ycor <= 110:
+      menutaco.setposition(0, menutaco.ycor()+0.1)
+      menu_ycor += 0.1
+    while menu_ycor >= 100:
+      menutaco.setposition(0, menutaco.ycor()-0.1)
+      menu_ycor -= 0.1
+
+# taco bobbing
+taco_ycor = 100.0
+def taco_up():
+  global taco_ycor
+  while game_start == True or tutorialmode == True:
+    while taco_ycor <= 110:
+      taco.setposition(-190, taco.ycor()+0.1)
+      taco_ycor += 0.1
+    while taco_ycor >= 100:
+      taco.setposition(-190, taco.ycor()-0.1)
+      taco_ycor -= 0.1
+
+
+# Start button
+start_button = trtl.Turtle()
+start_button.hideturtle()
+start_button.speed(0)
+start_button.penup()
+start_button.setposition(0, -20)
+start_button.shape("menuplay.gif")
+start_button.showturtle()
+
+# Help/tutorial button
+help = trtl.Turtle()
+help.hideturtle()
+help.pu()
+help.speed(0)
+help.shape("menuhelp.gif")
+help.setposition(0, -120)
+help.showturtle()
+
+# arrow for tutorial
+arrow = trtl.Turtle()
+arrow.hideturtle()
+arrow.speed(0)
+arrow.pu()
+arrow.shape("arrow.gif")
+
+# start game function
+def start_game(x, y):
+  global game_start
+  global menu
+  global tutorialmode
+  
+  winsound.PlaySound("gamemusic.wav", winsound.SND_LOOP + winsound.SND_ASYNC)
+  # screen setup
+  help.hideturtle()
+  menutaco.hideturtle()
+  wn.setup(1200,700)
+  wn.bgpic("background.gif")
+  game_start = True
+  start_button.hideturtle()
+  taco.showturtle()
+  taco.shape("taco.gif")
+  score_writer.write(str(score) + " tacos", font = font_setup)
+  next.write("Next upgrade: " + str(upgrade_cost) + " tacos",font = ("Arial", "7", "italic"))
+  rate.write("tacos per click: " + str(score_rate))
+  tutorialmode = False
+  menu = False
+
+
+  # sprite setup
+  tabasco.showturtle()
+  bbq_sauce.showturtle()
+  ketchup.showturtle()
+  mayonnaise.showturtle()
+  soy_sauce.showturtle()
+  button.showturtle()
+  back_button.showturtle()
+  wn.ontimer(taco_up, 1000)
+
+
+  if replay != True:
+    wn.ontimer(countdown, rand.randint(30000,120000))
+  elif replay == True:
+    update_tabasco()
+    update_bbq_sauce()
+    update_ketchup()
+    update_mayonnaise()
+    update_soy_sauce()
+    tps_update()
+    timer()
+    replay == False
+    
+    
+  
+# tutorial function
+def tutorial(x,y):
+  # screen setup
+  winsound.PlaySound("btsmusic.wav", winsound.SND_LOOP + winsound.SND_ASYNC)
+  global tutorialmode
+  tutorialmode = True
+  help.hideturtle()
+  menutaco.hideturtle()
+  wn.setup(1200,700)
+  wn.bgpic("background.gif")
+
+  # code for using tutorial after playing
+  score_writer.clear()
+  next.clear()
+  rate.clear()
+  tps.clear()
+  start_button.hideturtle()
+  next.write("Next upgrade: 1",font = ("Arial", "7", "italic"))
+  rate.write("tacos per click: 1")
+  score_writer.write("0 tacos", font = font_setup)
+  tps.write("Current tacos per second: 0")
+  
+  for writer in sauce_writer_list:
+    writer.setposition(writer_coords[sauce_writer_list.index(writer)])
+    writer.clear()
+    writer.write("0 oz. of " + menu_items[sauce_writer_list.index(writer)], font = font_setup)
+    writer.setposition(writer.xcor(), writer.ycor()-20)
+    writer.write("Current cost: " + menu_costs[sauce_writer_list.index(writer)] + " tacos")
+  for timer in timer_list:
+    timer.shape("timer0.gif")
+
+  # sprite setup
+  taco.shape("taco.gif")
+  taco.showturtle()
+  button.shape("buttonunpressed.gif")
+  tabasco.showturtle()
+  bbq_sauce.showturtle()
+  ketchup.showturtle()
+  mayonnaise.showturtle()
+  soy_sauce.showturtle()
+  button.showturtle()
+  
+# arrow setup
+  arrow.setposition(0, -150)
+  arrow.shape("arrowleft.gif")
+  arrow_stamp()
+  arrow.setposition(-50, -140)
+  arrow.color("white")
+  arrow.write("Press the Taco to",font = ("Arial", "10", "italic"))
+  arrow.setposition(-50, -160)
+  arrow.write("increase your score",font = ("Arial", "10", "italic"))
+
+def arrow_stamp():
+  arrow.showturtle()
+  arrow.stamp()
+  arrow.hideturtle()
+
+# menu screen idle
+start_button.onclick(start_game)
+help.onclick(tutorial)
+wn.ontimer(menutaco_up, 1000)
 
 #-----click detection-----
 tabasco.onclick(buy_tabasco)
@@ -796,7 +958,7 @@ soy_sauce.onclick(buy_soy_sauce)
 burrito.onclick(burrito_click)
 button.onclick(button_click)
 taco.onclick(taco_click)
-
+back_button.onclick(back)
 
 wn.listen()
 wn.mainloop()
